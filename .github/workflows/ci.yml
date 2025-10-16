@@ -15,13 +15,6 @@ jobs:
       matrix:
         browser: [chromium, firefox, webkit]
         node-version: [18]
-    env:
-      BASE_URL: ${{ secrets.BASE_URL }}
-      API_BASE_URL: ${{ secrets.API_BASE_URL }}
-      ADMIN_USER: ${{ secrets.ADMIN_USER }}
-      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
-      TIMEOUT: '30000'
-      PARALLEL: 2
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -45,15 +38,14 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-
       - name: Run tests (with retries)
         env:
           BROWSER: ${{ matrix.browser }}
-          BASE_URL: ${{ env.BASE_URL }}
-          API_BASE_URL: ${{ env.API_BASE_URL }}
-          ADMIN_USER: ${{ env.ADMIN_USER }}
-          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
-          PARALLEL: ${{ env.PARALLEL }}
+          BASE_URL: ${{ secrets.BASE_URL }}
+          API_BASE_URL: ${{ secrets.API_BASE_URL }}
+          ADMIN_USER: ${{ secrets.ADMIN_USER }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+          PARALLEL: 2
         run: |
           set -e
           RETRIES=2
@@ -73,6 +65,12 @@ jobs:
           echo "Listing reports/${{ matrix.browser }} after tests:"
           ls -l reports/${{ matrix.browser }} || echo "No reports folder for ${{ matrix.browser }}"
 
+      - name: Upload all cucumber reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports-${{ matrix.browser }}-${{ github.run_id }}
+          path: reports/${{ matrix.browser }}
 
   python-exercises:
     name: Python exercises
@@ -127,18 +125,3 @@ jobs:
             python-agents/exercise3.log
             python-agents/exercise4.log
             python-agents/exercise5.log
-
-  upload-reports:
-    name: Upload all cucumber reports
-    runs-on: ubuntu-latest
-    needs: test
-    if: always()
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Upload all cucumber reports
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-reports-all-${{ github.run_id }}
-          path: reports

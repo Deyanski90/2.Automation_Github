@@ -1,0 +1,6 @@
+openai-agents>=1.1.0
+openai
+requests
+beautifulsoup4
+pytest
+python-dotenv

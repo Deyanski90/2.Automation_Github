@@ -82,3 +82,57 @@ jobs:
         with:
           name: cucumber-reports-all-${{ github.run_id }}
           path: reports
+
+  python-exercises:
+    name: Python exercises
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/python-agents/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install Python dependencies
+        run: |
+          python -m venv .venv
+          . .venv/bin/activate
+          python -m pip install --upgrade pip
+          pip install -r python-agents/requirements.txt
+
+      - name: Run Python exercises (capture logs)
+        run: |
+          . .venv/bin/activate
+          if [ -n "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY is set in the job environment."
+          else
+            echo "OPENAI_API_KEY not set; exercises that require it will print a warning."
+          fi
+          python python-agents/exercise1_qa_helper.py 2>&1 | tee python-agents/exercise1.log || true
+          python python-agents/exercise2_websearch.py 2>&1 | tee python-agents/exercise2.log || true
+          python python-agents/exercise3_multi_agent.py 2>&1 | tee python-agents/exercise3.log || true
+          python python-agents/exercise4_guardrails.py 2>&1 | tee python-agents/exercise4.log || true
+          python python-agents/exercise5_trace_debug.py 2>&1 | tee python-agents/exercise5.log || true
+
+      - name: Upload python exercise logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: python-exercises-logs
+          path: |
+            python-agents/exercise1.log
+            python-agents/exercise2.log
+            python-agents/exercise3.log
+            python-agents/exercise4.log
+            python-agents/exercise5.log

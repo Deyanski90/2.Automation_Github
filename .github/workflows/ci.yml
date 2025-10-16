@@ -45,6 +45,7 @@ jobs:
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
+
       - name: Run tests (with retries)
         env:
           BROWSER: ${{ matrix.browser }}
@@ -66,6 +67,11 @@ jobs:
               echo "Tests failed — retrying..."
             fi
           done
+
+      - name: List reports folder contents (debug)
+        run: |
+          echo "Listing reports/${{ matrix.browser }} after tests:"
+          ls -l reports/${{ matrix.browser }} || echo "No reports folder for ${{ matrix.browser }}"
 
 
 

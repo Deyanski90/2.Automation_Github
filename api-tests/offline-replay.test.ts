@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-//
+// test
 test('Replay user flow offline using HAR', async ({ page }) => {
   // Save HAR file from a previous run (see Playwright docs)
   await page.routeFromHAR('user-flow.har');

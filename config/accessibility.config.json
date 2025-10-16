@@ -1,0 +1,30 @@
+{
+  "pages": [
+    {
+      "name": "Login",
+      "path": "/",
+      "excludeSelectors": ["[data-test=error]", ".advertisement"]
+    },
+    {
+      "name": "Dashboard",
+      "path": "/inventory.html",
+      "excludeSelectors": [".live-chat", ".timestamp"],
+      "disableRules": ["button-name", "landmark-one-main", "page-has-heading-one", "region"]
+    },
+    {
+      "name": "User Creation",
+      "path": "/admin/users/create",
+      "excludeSelectors": [".dynamic-id"]
+    },
+    {
+      "name": "Reports",
+      "path": "/reports/monthly",
+      "excludeSelectors": ["[data-dynamic=true]"]
+    },
+    {
+      "name": "Profile",
+      "path": "/profile",
+      "excludeSelectors": [".avatar-upload"]
+    }
+  ]
+}

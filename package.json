@@ -1,0 +1,44 @@
+{
+  "name": "test-automation-project",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "cucumber-js --require-module ts-node/register --require \"support/**/*.ts\" --require \"step-definitions/**/*.ts\"",
+    "test:smoke": "cucumber-js --require-module ts-node/register --require \"support/**/*.ts\" --require \"step-definitions/**/*.ts\" --tags @smoke",
+    "test:teacher": "cucumber-js --require-module ts-node/register --require \"support/**/*.ts\" --require \"step-definitions/**/*.ts\" --tags @teacher",
+    "test:student": "cucumber-js --require-module ts-node/register --require \"support/**/*.ts\" --require \"step-definitions/**/*.ts\" --tags @student",
+    "test:regression": "cucumber-js --require-module ts-node/register --require \"support/**/*.ts\" --require \"step-definitions/**/*.ts\" --tags @regression",
+    "report": "start reports\\cucumber-report.html",
+    "test:percy": "percy exec -- npx cucumber-js --require-module ts-node/register --require \"support/**/*.ts\" --require \"step-definitions/**/*.ts\"",
+    "test:accessibility": "npx cucumber-js features/accessibility/accessibility.feature --require-module ts-node/register --require \"support/**/*.ts\" --require \"step-definitions/**/*.ts\"",
+    "test:api": "jest api-tests --runInBand"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@cucumber/cucumber": "^12.2.0",
+    "@percy/cli": "^1.0.0",
+    "@percy/playwright": "^1.0.0",
+    "@playwright/test": "^1.56.0",
+    "@types/jest": "^29.5.5",
+    "axe-core": "^4.6.3",
+    "axios": "^1.5.0",
+    "dotenv": "^17.2.3",
+    "jest": "^29.7.0",
+    "openai-agents": "^1.1.0",
+    "pixelmatch": "^5.3.0",
+    "pngjs": "^7.0.0",
+    "ts-jest": "^29.0.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.3"
+  },
+  "jest": {
+    "preset": "ts-jest",
+    "testEnvironment": "node",
+    "testMatch": [
+      "**/api-tests/**/*.test.ts"
+    ]
+  }
+}

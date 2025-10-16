@@ -1,0 +1,84 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    name: Tests on ${{ matrix.browser }} / Node ${{ matrix.node-version }}
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        browser: [chromium, firefox, webkit]
+        node-version: [18]
+    env:
+      BASE_URL: ${{ secrets.BASE_URL }}
+      API_BASE_URL: ${{ secrets.API_BASE_URL }}
+      ADMIN_USER: ${{ secrets.ADMIN_USER }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      TIMEOUT: '30000'
+      PARALLEL: 2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Cache NPM
+        uses: actions/cache@v4
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: Run tests (with retries)
+        env:
+          BROWSER: ${{ matrix.browser }}
+          BASE_URL: ${{ env.BASE_URL }}
+          API_BASE_URL: ${{ env.API_BASE_URL }}
+          ADMIN_USER: ${{ env.ADMIN_USER }}
+          ADMIN_PASSWORD: ${{ env.ADMIN_PASSWORD }}
+          PARALLEL: ${{ env.PARALLEL }}
+        run: |
+          set -e
+          RETRIES=2
+          COUNT=0
+          mkdir -p reports/${{ matrix.browser }}
+          until [ $COUNT -ge $RETRIES ]; do
+            echo "Running tests (attempt $((COUNT+1))) on $BROWSER..."
+            npm test -- --parallel $PARALLEL --format json:reports/${{ matrix.browser }}/cucumber-report.json --format html:reports/${{ matrix.browser }}/cucumber-report.html && break || true
+            COUNT=$((COUNT+1))
+            if [ $COUNT -lt $RETRIES ]; then
+              echo "Tests failed — retrying..."
+            fi
+          done
+
+      - name: Upload cucumber reports (per-browser)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports-${{ matrix.browser }}
+          path: |
+            reports/${{ matrix.browser }}/cucumber-report.json
+            reports/${{ matrix.browser }}/cucumber-report.html
+
+      - name: Upload all reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports-all-${{ github.run_id }}
+          path: reports

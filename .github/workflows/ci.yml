@@ -65,12 +65,13 @@ jobs:
           echo "Listing reports/${{ matrix.browser }} after tests:"
           ls -l reports/${{ matrix.browser }} || echo "No reports folder for ${{ matrix.browser }}"
 
-      - name: Upload all cucumber reports
+      - name: Upload per-browser cucumber reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: cucumber-reports-${{ matrix.browser }}-${{ github.run_id }}
+          name: cucumber-reports-${{ matrix.browser }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: reports/${{ matrix.browser }}
+
 
   python-exercises:
     name: Python exercises
@@ -125,3 +126,5 @@ jobs:
             python-agents/exercise3.log
             python-agents/exercise4.log
             python-agents/exercise5.log
+
+  # reports are uploaded per-browser as artifacts by the matrix jobs; no global upload job needed

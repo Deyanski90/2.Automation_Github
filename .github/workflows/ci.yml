@@ -68,13 +68,13 @@ jobs:
           done
 
 
-      - name: Check if report files exist
-        run: |
-          if [ -f reports/${{ matrix.browser }}/cucumber-report.json ]; then echo "JSON report found"; else echo "No JSON report"; fi
-          if [ -f reports/${{ matrix.browser }}/cucumber-report.html ]; then echo "HTML report found"; else echo "No HTML report"; fi
 
       - name: Upload cucumber reports (per-browser)
-        if: always()
+        if: |
+          always() && (
+            (hashFiles('reports/${{ matrix.browser }}/cucumber-report.json') != '') ||
+            (hashFiles('reports/${{ matrix.browser }}/cucumber-report.html') != '')
+          )
         uses: actions/upload-artifact@v4
         with:
           name: cucumber-reports-${{ matrix.browser }}-${{ github.run_id }}

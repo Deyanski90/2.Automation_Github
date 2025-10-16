@@ -74,27 +74,6 @@ jobs:
           ls -l reports/${{ matrix.browser }} || echo "No reports folder for ${{ matrix.browser }}"
 
 
-
-      - name: Upload cucumber reports (per-browser)
-        if: |
-          always() && (
-            (hashFiles('reports/${{ matrix.browser }}/cucumber-report.json') != '') ||
-            (hashFiles('reports/${{ matrix.browser }}/cucumber-report.html') != '')
-          )
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-reports-${{ matrix.browser }}-${{ github.run_id }}
-          path: |
-            reports/${{ matrix.browser }}/cucumber-report.json
-            reports/${{ matrix.browser }}/cucumber-report.html
-
-      - name: Upload all reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: cucumber-reports-all-${{ github.run_id }}
-          path: reports
-
   python-exercises:
     name: Python exercises
     runs-on: ubuntu-latest
@@ -148,3 +127,18 @@ jobs:
             python-agents/exercise3.log
             python-agents/exercise4.log
             python-agents/exercise5.log
+
+  upload-reports:
+    name: Upload all cucumber reports
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Upload all cucumber reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: cucumber-reports-all-${{ github.run_id }}
+          path: reports
